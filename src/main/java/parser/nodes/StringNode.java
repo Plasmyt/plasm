@@ -9,7 +9,7 @@ public class StringNode extends ASTNode {
     private final String value;
 
     public StringNode(String value) {
-        super(null); // StringNode'un ASTNode kurucusunu çağırmak için null geçiyoruz, çünkü Token gerekli değil.
+        super(null);
         this.value = value;
     }
 

@@ -3,8 +3,8 @@ package lexer.token;
 public class Token {
     private final TokenType type;
     private final String value;
-    private final int line; // Belirtecin satır numarası
-    private final int column; // Belirtecin sütun numarası
+    private final int line;
+    private final int column;
 
     public Token(TokenType type, String value, int line, int column) {
         this.type = type;
