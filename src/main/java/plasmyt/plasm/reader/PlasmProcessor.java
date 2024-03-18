@@ -3,7 +3,6 @@ package plasmyt.plasm.reader;
 import java.io.IOException;
 import java.util.Map;
 
-import plasmyt.plasm.parser.KeyValueParser;
 
 public class PlasmProcessor {
     private final String filePath;

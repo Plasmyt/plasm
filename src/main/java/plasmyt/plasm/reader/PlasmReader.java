@@ -24,7 +24,7 @@ public class PlasmReader extends Reader {
         while ((line = reader.readLine()) != null) {
             KeyValue keyValue = parseKeyValue(line);
             if (keyValue != null) {
-                values.put(keyValue.getKey(), keyValue.getValue());
+                values.put(keyValue.key(), keyValue.value());
             }
         }
         return values;
