@@ -1,4 +1,4 @@
-package parser;
+package plasmyt.plasm.parser;
 
 public class KeyValue {
     private final String key;

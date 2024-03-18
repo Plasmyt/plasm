@@ -1,4 +1,4 @@
-package parser;
+package plasmyt.plasm.parser;
 
 import java.util.HashMap;
 import java.util.Map;

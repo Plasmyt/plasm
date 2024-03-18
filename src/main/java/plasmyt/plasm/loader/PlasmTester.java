@@ -1,4 +1,4 @@
-package loader;
+package plasmyt.plasm.loader;
 
 public class PlasmTester {
     public static void main(String[] args) {

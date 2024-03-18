@@ -1,4 +1,4 @@
-package reader;
+package plasmyt.plasm.reader;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

@@ -1,8 +1,9 @@
-package reader;
+package plasmyt.plasm.reader;
 
 import java.io.IOException;
 import java.util.Map;
-import parser.KeyValueParser;
+
+import plasmyt.plasm.parser.KeyValueParser;
 
 public class PlasmProcessor {
     private final String filePath;
@@ -15,7 +16,7 @@ public class PlasmProcessor {
         try (PlasmReader fileReader = new PlasmReader(filePath)) {
             String[] lines = fileReader.readLines().toArray(new String[0]);
 
-            KeyValueParser keyValueParser = new KeyValueParser();
+            plasmyt.plasm.parser.KeyValueParser keyValueParser = new KeyValueParser();
             return keyValueParser.parse(lines);
         } catch (IOException e) {
             e.printStackTrace();

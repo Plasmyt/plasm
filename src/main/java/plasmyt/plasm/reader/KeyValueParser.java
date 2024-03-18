@@ -1,4 +1,4 @@
-package reader;
+package plasmyt.plasm.reader;
 
 public class KeyValueParser {
 }

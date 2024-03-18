@@ -1,4 +1,4 @@
-package loader;
+package plasmyt.plasm.loader;
 
 class PlasmFile {
     private final String name;
