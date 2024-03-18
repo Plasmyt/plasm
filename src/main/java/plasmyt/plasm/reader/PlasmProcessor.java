@@ -14,15 +14,13 @@ public class PlasmProcessor {
 
     public Map<String, Object> processFile() {
         try (PlasmReader fileReader = new PlasmReader(filePath)) {
-            String[] lines = fileReader.readLines().toArray(new String[0]);
-
-            plasmyt.plasm.parser.KeyValueParser keyValueParser = new KeyValueParser();
-            return keyValueParser.parse(lines);
+            return fileReader.readValues();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
     }
+
     public static void main(String[] args) {
         String filePath = "C:\\Users\\usugo\\IdeaProjects\\plasm\\src\\main\\resources\\path\\plasm1.psm";
         PlasmProcessor processor = new PlasmProcessor(filePath);
