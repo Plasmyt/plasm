@@ -3,7 +3,9 @@ package plasmyt.plasm.reader;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -23,10 +25,23 @@ public class PlasmReader implements AutoCloseable {
         this.valueParser = new ValueParser();
     }
 
-    public Map<String, Object> readValues(Function<String, KeyValue> parser) throws IOException {
-        Map<String, Object> values = new HashMap<>();
+    public String[] readLines() throws IOException {
+        List<String> lines = new ArrayList<>();
         String line;
         while ((line = reader.readLine()) != null) {
+            lines.add(line);
+        }
+        return lines.toArray(new String[0]);
+    }
+
+    private KeyValue parseLine(String line) throws IOException {
+        return defaultParser(line, "");
+    }
+
+    public Map<String, Object> readValues(Function<String, KeyValue> parser) throws IOException {
+        String[] lines = readLines();
+        Map<String, Object> values = new HashMap<>();
+        for (String line : lines) {
             KeyValue keyValue = parser.apply(line);
             if (keyValue != null) {
                 values.put(keyValue.key(), parseValue(keyValue.value()));

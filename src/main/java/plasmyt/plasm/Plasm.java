@@ -3,6 +3,8 @@ package plasmyt.plasm;
 import java.io.IOException;
 import java.util.Map;
 
+import plasmyt.plasm.ast.ASTBuilder;
+import plasmyt.plasm.ast.nodes.PlasmListNode;
 import plasmyt.plasm.reader.PlasmProcessor;
 import plasmyt.plasm.reader.PlasmReader;
 
@@ -16,6 +18,16 @@ public class Plasm {
     public Map<String, Object> getData() {
         PlasmProcessor processor = new PlasmProcessor(filePath);
         return processor.processFile();
+    }
+
+    public PlasmListNode buildAST() {
+        try (PlasmReader fileReader = new PlasmReader(filePath, null)) {
+            ASTBuilder astBuilder = new ASTBuilder();
+            return astBuilder.buildAST(fileReader.readLines());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static void main(String[] args) {
