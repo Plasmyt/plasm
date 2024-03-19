@@ -35,7 +35,7 @@ public class ASTBuilder {
             String key = matcher.group(1).trim();
             String valueString = matcher.group(3);
             Object value = valueParser.parseValue(valueString);
-            return new PlasmFileNode(key, (String) value);
+            return new PlasmFileNode(key, "", (String) value);
         }
         return null;
     }
