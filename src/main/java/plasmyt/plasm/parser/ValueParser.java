@@ -23,9 +23,9 @@ public class ValueParser {
                     item = removeQuotes(item);
                 }
                 try {
-                    list.add(Integer.parseInt(item)); // Eğer integerse ekle
+                    list.add(Integer.parseInt(item));
                 } catch (NumberFormatException e) {
-                    list.add(item); // Değilse string olarak ekle
+                    list.add(item);
                 }
             }
         }
