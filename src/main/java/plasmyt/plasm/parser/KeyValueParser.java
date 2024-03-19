@@ -2,8 +2,12 @@ package plasmyt.plasm.parser;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class KeyValueParser {
+    private static final Pattern KEY_VALUE_PATTERN = Pattern.compile("([^:]+):\\s*(\"([^\"]*)\"|([^,]+))");
+
     private final ValueParser valueParser;
 
     public KeyValueParser() {
@@ -22,10 +26,10 @@ public class KeyValueParser {
     }
 
     private KeyValue parseKeyValue(String line) {
-        String[] parts = line.split(":", 2);
-        if (parts.length == 2) {
-            String key = parts[0].trim();
-            String valueString = parts[1].trim();
+        Matcher matcher = KEY_VALUE_PATTERN.matcher(line);
+        if (matcher.matches()) {
+            String key = matcher.group(1).trim();
+            String valueString = matcher.group(3);
             Object value = valueParser.parseValue(valueString);
             return new KeyValue(key, value);
         }

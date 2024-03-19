@@ -2,51 +2,42 @@ package plasmyt.plasm.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ValueParser {
+
+    private static final Pattern LIST_ITEM_PATTERN = Pattern.compile("\"(.*?)\"|[^,]+");
+
     public Object parseValue(String valueString) {
         if (valueString.startsWith("*")) {
             return parseListValue(valueString);
         } else {
-            return parseStringValue(valueString);
+            return parseSingleValue(valueString);
+        }
+    }
+
+    private Object parseSingleValue(String valueString) {
+        Matcher matcher = LIST_ITEM_PATTERN.matcher(valueString);
+        if (matcher.matches()) {
+            String value = matcher.group(1);
+            return (value != null) ? value : matcher.group();
+        } else {
+            return null;
         }
     }
 
     private List<Object> parseListValue(String valueString) {
         List<Object> list = new ArrayList<>();
-        valueString = valueString.substring(1).trim();
-        if (!valueString.isEmpty()) {
-            String[] listItems = valueString.split(",");
-            for (String item : listItems) {
-                item = item.trim();
-                if (item.startsWith("\"") && item.endsWith("\"") && item.length() > 1) {
-                    item = removeQuotes(item);
-                }
-                try {
-                    list.add(Integer.parseInt(item));
-                } catch (NumberFormatException e) {
-                    list.add(item);
-                }
+        Matcher matcher = LIST_ITEM_PATTERN.matcher(valueString.substring(1));
+        while (matcher.find()) {
+            String item = matcher.group(1);
+            if (item != null) {
+                list.add(item);
+            } else {
+                list.add(matcher.group());
             }
         }
         return list;
-    }
-
-    private String removeQuotes(String item) {
-        return item.substring(1, item.length() - 1);
-    }
-
-    private Object parseStringValue(String valueString) {
-        if (valueString.startsWith("\"") && valueString.endsWith("\"") && valueString.length() > 1) {
-            return removeQuotes(valueString);
-        } else if (valueString.contains(":")) {
-            return valueString;
-        } else {
-            try {
-                return Integer.parseInt(valueString);
-            } catch (NumberFormatException e) {
-                return valueString;
-            }
-        }
     }
 }

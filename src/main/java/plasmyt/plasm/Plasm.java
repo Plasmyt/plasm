@@ -1,8 +1,10 @@
 package plasmyt.plasm;
 
+import java.io.IOException;
 import java.util.Map;
 
 import plasmyt.plasm.reader.PlasmProcessor;
+import plasmyt.plasm.reader.PlasmReader;
 
 public class Plasm {
     private final String filePath;
@@ -18,14 +20,18 @@ public class Plasm {
 
     public static void main(String[] args) {
         String filePath = "C:\\Users\\usugo\\IdeaProjects\\plasm\\src\\main\\resources\\path\\plasm1.psm";
-        Plasm plasm = new Plasm(filePath);
-        Map<String, Object> data = plasm.getData();
-        if (data != null) {
-            for (Map.Entry<String, Object> entry : data.entrySet()) {
-                System.out.println(entry.getKey() + ": " + entry.getValue());
+        String keyToFind = "name";
+
+        try (PlasmReader reader = new PlasmReader(filePath, null)) {
+            String value = reader.getElement(keyToFind);
+            if (value != null) {
+                System.out.println("Key Value: " + keyToFind);
+                System.out.println("Value: " + value);
+            } else {
+                System.out.println("Value not found");
             }
-        } else {
-            System.out.println("An error occurred while processing the file.");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

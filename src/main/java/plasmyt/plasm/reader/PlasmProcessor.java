@@ -14,7 +14,7 @@ public class PlasmProcessor {
     }
 
     public Map<String, Object> processFile() {
-        try (PlasmReader fileReader = new PlasmReader(filePath)) {
+        try (PlasmReader fileReader = new PlasmReader(filePath, null)) {
             Function<String, KeyValue> parser = (line) -> {
                 try {
                     return fileReader.defaultParser(line, filePath);

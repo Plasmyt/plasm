@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import plasmyt.plasm.parser.KeyValue;
 import plasmyt.plasm.parser.ValueParser;
@@ -13,9 +15,11 @@ import plasmyt.plasm.parser.ValueParser;
 public class PlasmReader implements AutoCloseable {
     private final BufferedReader reader;
     private final ValueParser valueParser;
+    private final Map<String, Object> data;
 
-    public PlasmReader(String filePath) throws IOException {
+    public PlasmReader(String filePath, Map<String, Object> data) throws IOException {
         this.reader = new BufferedReader(new FileReader(filePath));
+        this.data = data;
         this.valueParser = new ValueParser();
     }
 
@@ -45,13 +49,26 @@ public class PlasmReader implements AutoCloseable {
     }
 
     public KeyValue defaultParser(String line, String filePath) throws IOException {
-        String[] parts = line.split(":", 2);
-        if (parts.length == 2) {
-            String key = parts[0].trim();
-            String valueString = parts[1].trim();
-            try (PlasmReader reader = new PlasmReader(filePath)) {
+        Pattern pattern = Pattern.compile("^\\s*([^:]+)\\s*:\\s*(.*?)\\s*$");
+        Matcher matcher = pattern.matcher(line);
+        if (matcher.matches()) {
+            String key = matcher.group(1).trim();
+            String valueString = matcher.group(2).trim();
+            try (PlasmReader reader = new PlasmReader(filePath, data)) {
                 Object value = reader.parseValue(valueString);
                 return new KeyValue(key, value);
+            }
+        }
+        return null;
+    }
+
+    public String getElement(String key) throws IOException {
+        String line;
+        Pattern pattern = Pattern.compile("^\\s*" + key + "\\s*:\\s*(.*)$");
+        while ((line = reader.readLine()) != null) {
+            Matcher matcher = pattern.matcher(line);
+            if (matcher.matches()) {
+                return matcher.group(1).trim();
             }
         }
         return null;
