@@ -5,3 +5,8 @@ address: {
   * city: "Cityville",
   * country: "Country"
 }
+seks: {
+  * street: "123 Main 32",
+  * city: "21",
+  * country: "12"
+}

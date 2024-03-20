@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 public class PlasmReader implements AutoCloseable {
     private final BufferedReader reader;
+    private final Pattern keyValuePattern = Pattern.compile("^\\s*([^:]+)\\s*:\\s*(.*?)\\s*$");
 
     public PlasmReader(String filePath) throws IOException {
         if (filePath == null) {
@@ -47,8 +48,7 @@ public class PlasmReader implements AutoCloseable {
     }
 
     private KeyValue defaultParser(String line, boolean isArrayElement) throws IOException {
-        Pattern pattern = Pattern.compile("^\\s*([^:]+)\\s*:\\s*(.*?)\\s*$");
-        Matcher matcher = pattern.matcher(line);
+        Matcher matcher = keyValuePattern.matcher(line);
         if (matcher.matches()) {
             String key = matcher.group(1).trim();
             String valueString = matcher.group(2).trim();
@@ -69,15 +69,9 @@ public class PlasmReader implements AutoCloseable {
             if (line.equals("}")) {
                 break;
             } else if (line.startsWith("*")) {
-                KeyValue keyValue = parseLine(line);
-                if (keyValue != null) {
-                    nestedObject.put(keyValue.key(), (String) keyValue.value());
-                }
+                addKeyValueToMap(parseLine(line), nestedObject);
             } else {
-                KeyValue keyValue = parseLine(line);
-                if (keyValue != null) {
-                    nestedObject.put(keyValue.key(), (String) keyValue.value());
-                }
+                addKeyValueToMap(parseLine(line), nestedObject);
             }
         }
 
@@ -85,6 +79,11 @@ public class PlasmReader implements AutoCloseable {
         return nestedObject;
     }
 
+    private void addKeyValueToMap(KeyValue keyValue, Map<String, String> map) {
+        if (keyValue != null) {
+            map.put(keyValue.key(), (String) keyValue.value());
+        }
+    }
 
     public Map<String, Object> readValues() throws IOException {
         Map<String, Object> values = new HashMap<>();
@@ -105,7 +104,6 @@ public class PlasmReader implements AutoCloseable {
         return values;
     }
 
-
     private Object parseValue(Object value) {
         if (value instanceof String strValue) {
             if (strValue.startsWith("{")) {
@@ -122,8 +120,6 @@ public class PlasmReader implements AutoCloseable {
         }
         return value;
     }
-
-
 
     @Override
     public void close() throws IOException {
