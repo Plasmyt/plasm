@@ -1,28 +1,22 @@
 package plasmyt.plasm.reader;
 
+import plasmyt.plasm.parser.KeyValue;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import plasmyt.plasm.parser.KeyValue;
-import plasmyt.plasm.parser.ValueParser;
-
 public class PlasmReader implements AutoCloseable {
     private final BufferedReader reader;
-    private final ValueParser valueParser;
-    private final Map<String, Object> data;
 
-    public PlasmReader(String filePath, Map<String, Object> data) throws IOException {
+    public PlasmReader(String filePath) throws IOException {
+        if (filePath == null) {
+            throw new IllegalArgumentException("Document path is not defined.");
+        }
         this.reader = new BufferedReader(new FileReader(filePath));
-        this.data = data;
-        this.valueParser = new ValueParser();
     }
 
     public String[] readLines() throws IOException {
@@ -34,60 +28,102 @@ public class PlasmReader implements AutoCloseable {
         return lines.toArray(new String[0]);
     }
 
-    private KeyValue parseLine(String line) throws IOException {
-        return defaultParser(line, "");
-    }
-
-    public Map<String, Object> readValues(Function<String, KeyValue> parser) throws IOException {
-        String[] lines = readLines();
-        Map<String, Object> values = new HashMap<>();
-        for (String line : lines) {
-            KeyValue keyValue = parser.apply(line);
-            if (keyValue != null) {
-                values.put(keyValue.key(), parseValue(keyValue.value()));
-            }
+    public KeyValue parseLine(String line) throws IOException {
+        line = line.trim();
+        if (line.startsWith("{")) {
+            Map<String, String> nestedMap = parseNestedObject();
+            return new KeyValue("nested_object", nestedMap);
+        } else if (line.endsWith("}")) {
+            return null;
+        } else if (line.startsWith("*")) {
+            return defaultParser(line.substring(1).trim(), true);
+        } else {
+            return defaultParser(line);
         }
-        return values;
     }
 
-    private Object parseValue(Object value) {
-        if (value instanceof String strValue) {
-            return valueParser.parseValue(strValue);
-        } else if (value instanceof String[] strArray) {
-            Object[] parsedItems = new Object[strArray.length];
-            for (int i = 0; i < strArray.length; i++) {
-                parsedItems[i] = valueParser.parseValue(strArray[i]);
-            }
-            return parsedItems;
-        }
-        return value;
+    private KeyValue defaultParser(String line) throws IOException {
+        return defaultParser(line, false);
     }
 
-    public KeyValue defaultParser(String line, String filePath) throws IOException {
+    private KeyValue defaultParser(String line, boolean isArrayElement) throws IOException {
         Pattern pattern = Pattern.compile("^\\s*([^:]+)\\s*:\\s*(.*?)\\s*$");
         Matcher matcher = pattern.matcher(line);
         if (matcher.matches()) {
             String key = matcher.group(1).trim();
             String valueString = matcher.group(2).trim();
-            try (PlasmReader reader = new PlasmReader(filePath, data)) {
-                Object value = reader.parseValue(valueString);
-                return new KeyValue(key, value);
+            if (isArrayElement) {
+                key = "*" + key;
             }
+            return new KeyValue(key, valueString);
         }
         return null;
     }
 
-    public String getElement(String key) throws IOException {
+    public Map<String, String> parseNestedObject() throws IOException {
+        Map<String, String> nestedObject = new HashMap<>();
         String line;
-        Pattern pattern = Pattern.compile("^\\s*" + key + "\\s*:\\s*(.*)$");
+
         while ((line = reader.readLine()) != null) {
-            Matcher matcher = pattern.matcher(line);
-            if (matcher.matches()) {
-                return matcher.group(1).trim();
+            line = line.trim();
+            if (line.equals("}")) {
+                break;
+            } else if (line.startsWith("*")) {
+                KeyValue keyValue = parseLine(line);
+                if (keyValue != null) {
+                    nestedObject.put(keyValue.key(), (String) keyValue.value());
+                }
+            } else {
+                KeyValue keyValue = parseLine(line);
+                if (keyValue != null) {
+                    nestedObject.put(keyValue.key(), (String) keyValue.value());
+                }
             }
         }
-        return null;
+
+        nestedObject.replaceAll((key, value) -> value.replaceAll(",+$", ""));
+        return nestedObject;
     }
+
+
+    public Map<String, Object> readValues() throws IOException {
+        Map<String, Object> values = new HashMap<>();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            KeyValue keyValue = parseLine(line);
+            if (keyValue != null) {
+                Object value = parseValue((String) keyValue.value());
+                if (keyValue.key().startsWith("*")) {
+                    List<Object> array = (List<Object>) values.getOrDefault(keyValue.key(), new ArrayList<>());
+                    array.add(value);
+                    values.put(keyValue.key(), array);
+                } else {
+                    values.put(keyValue.key(), value);
+                }
+            }
+        }
+        return values;
+    }
+
+
+    private Object parseValue(Object value) {
+        if (value instanceof String strValue) {
+            if (strValue.startsWith("{")) {
+                try {
+                    return parseNestedObject();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else if (strValue.startsWith("\"") && strValue.endsWith("\"")) {
+                return strValue.substring(1, strValue.length() - 1);
+            } else if (strValue.startsWith("*")) {
+                return "*" + strValue.substring(1);
+            }
+        }
+        return value;
+    }
+
+
 
     @Override
     public void close() throws IOException {

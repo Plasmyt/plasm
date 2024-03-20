@@ -1,7 +1,7 @@
 name: "John Doe"
 age: 30
 address: {
-  street: "123 Main Street",
-  city: "Cityville",
-  country: "Country"
+  * street: "123 Main Street",
+  * city: "Cityville",
+  * country: "Country"
 }

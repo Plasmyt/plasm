@@ -13,19 +13,12 @@ public class PlasmProcessor {
         this.filePath = filePath;
     }
 
-    public Map<String, Object> processFile() {
-        try (PlasmReader fileReader = new PlasmReader(filePath, null)) {
-            Function<String, KeyValue> parser = (line) -> {
-                try {
-                    return fileReader.defaultParser(line, filePath);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            };
-            return fileReader.readValues(parser);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+    public Map<String, Object> processFile() throws IOException {
+        if (filePath == null) {
+            throw new IllegalArgumentException("File path is not defined.");
+        }
+        try (PlasmReader fileReader = new PlasmReader(filePath)) {
+            return fileReader.readValues();
         }
     }
 }
